@@ -1,7 +1,7 @@
 import unittest
 from htmlnode import LeafNode
 from textnode import TextNode, TextType
-from converter_func import text_node_to_html_node
+from converter_func import text_node_to_html_node, split_nodes_delimiter
 
 """
 tag, value, props | text, text_type, url 
@@ -80,5 +80,47 @@ class Test_text_node_to_html_node(unittest.TestCase):
 
 
 
+class Test_split_nodes_delimiter(unittest.TestCase):
+    def test_base_case(self):
+        old_nodes = [TextNode("this has a `code block` in it", TextType.TEXT)]
+        output = [TextNode("this has a ", TextType.TEXT), TextNode("code block", TextType.CODE), TextNode(" in it", TextType.TEXT)]
+        self.assertEqual(output, split_nodes_delimiter(old_nodes, "`", TextType.CODE))
+
+    def test_value_error(self):
+        flawed_node = [TextNode("this isn't `closed", TextType.TEXT)]
+        with self.assertRaises(ValueError):
+            split_nodes_delimiter(flawed_node, "`", TextType.CODE)
+
+    def test_not_text_type(self):
+        old_nodes = [TextNode("this has a `code block` in it", TextType.TEXT), TextNode("**bold block**", TextType.BOLD)]
+        output = [TextNode("this has a ", TextType.TEXT), TextNode("code block", TextType.CODE), TextNode(" in it", TextType.TEXT), TextNode("**bold block**", TextType.BOLD)]
+        self.assertEqual(output, split_nodes_delimiter(old_nodes, "`", TextType.CODE))
+
+    def test_starts_with_delimiter(self):
+        node = [TextNode("`code string` at the start", TextType.TEXT)]
+        output = [TextNode("code string", TextType.CODE), TextNode(" at the start", TextType.TEXT)]
+        self.assertEqual(output, split_nodes_delimiter(node, "`", TextType.CODE))
+
+    def test_ends_with_delimiter(self):
+        node = [TextNode("this ends with `code`", TextType.TEXT)]
+        output = [TextNode("this ends with ", TextType.TEXT), TextNode("code", TextType.CODE)]
+        self.assertEqual(output, split_nodes_delimiter(node, "`", TextType.CODE))
+
+    def test_multiple_delimiter_pairs(self):
+        node = [TextNode("I put some `code` in your `code`, yo dawg", TextType.TEXT)]
+        output = [TextNode("I put some ", TextType.TEXT), TextNode("code", TextType.CODE), TextNode(" in your ", TextType.TEXT), TextNode("code", TextType.CODE), TextNode(", yo dawg", TextType.TEXT)]
+        self.assertEqual(output, split_nodes_delimiter(node, "`", TextType.CODE))
+
+    def test_adjacent_delimiters(self):
+        # double delimiters open-close open-close, so the test in the middle is actually returned as a TEXT node. Double Dilimiters are a mistake. 
+        node = [TextNode("``code``", TextType.TEXT)]
+        output = [TextNode("code", TextType.TEXT)]
+        self.assertEqual(output, split_nodes_delimiter(node, "`", TextType.CODE))
+
+
+
+
+
+        
 
     
