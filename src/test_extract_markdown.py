@@ -19,8 +19,7 @@ class Test_extract_markdown_images(unittest.TestCase):
 
 class Test_extract_markdown_links(unittest.TestCase):
         def test_extract_markdown_links(self):
-               matches = extract_markdown_links("This is text with a link"
-            " [to boot dev](https://www.boot.dev) and [to youtube](https://www.youtube.com/@bootdotdev)")
+               matches = extract_markdown_links("This is text with a link [to boot dev](https://www.boot.dev) and [to youtube](https://www.youtube.com/@bootdotdev)")
                self.assertListEqual([("to boot dev", "https://www.boot.dev"), ("to youtube", "https://www.youtube.com/@bootdotdev")], matches)
 
         def test_extract_markdown_links_null_case(self):
