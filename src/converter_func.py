@@ -70,6 +70,8 @@ def split_images(old_nodes):
             continue
         if node.text_type != TextType.TEXT:
             continue
+        if node.text == "":
+            continue 
         if not extract_markdown_images(node.text):
             new_nodes.append(node)
         else:
@@ -91,7 +93,36 @@ def split_images(old_nodes):
                 new_nodes.append(TextNode(f"{split_text[1]}", TextType.TEXT))
     return new_nodes
                 
-           
+def split_links(old_nodes):
+
+    new_nodes = []
+    for node in old_nodes:
+        if not isinstance(node, TextNode):
+            continue
+        if node.text_type != TextType.TEXT:
+            continue
+        if node.text == "":
+            continue
+        if not extract_markdown_links(node.text):
+            new_nodes.append(node)
+        else:
+            lnk = extract_markdown_links(node.text)
+            split_text = node.text.split(f"[{lnk[0][0]}]({lnk[0][1]})", 1)
+            if split_text[0] != "":
+                new_nodes.append(TextNode(f"{split_text[0]}", TextType.TEXT))
+            if lnk[0][0] != "":
+                new_nodes.append(TextNode(f"{lnk[0][0]}", TextType.LINK, f"{lnk[0][1]}"))
+                while extract_markdown_links(split_text[1]) != []:
+                    lnk = extract_markdown_links(split_text[1])
+                    split_text_again = split_text[1].split(f"[{lnk[0][0]}]({lnk[0][1]})", 1)
+                    if split_text_again[0] != "":
+                        new_nodes.append(TextNode(f"{split_text_again[0]}", TextType.TEXT))
+                    if lnk[0][0] != "":
+                        new_nodes.append(TextNode(f"{lnk[0][0]}", TextType.LINK, f"{lnk[0][1]}"))
+                    split_text[1] = split_text_again[1]
+                if split_text[1] != "":
+                    new_nodes.append(TextNode(f"{split_text[1]}", TextType.TEXT))
+    return new_nodes           
 
 
 
