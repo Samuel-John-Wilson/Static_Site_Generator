@@ -66,13 +66,31 @@ def split_images(old_nodes):
     
     new_nodes = []
     for node in old_nodes:
+        if not isinstance(node, TextNode):
+            continue
+        if node.text_type != TextType.TEXT:
+            continue
         if not extract_markdown_images(node.text):
             new_nodes.append(node)
         else:
             img = extract_markdown_images(node.text)
             split_text = node.text.split(f"![{img[0][0]}]({img[0][1]})", 1)
-            new_nodes.append(TextNode(f"{split_text[0]}", TextType.TEXT))
-            new_nodes.append(TextNode(f"{img[0][0]}", TextType.IMAGE, f"{img[0][1]}"))
+            if split_text[0] != "":
+                new_nodes.append(TextNode(f"{split_text[0]}", TextType.TEXT))
+            if img[0][0] != "":
+                new_nodes.append(TextNode(f"{img[0][0]}", TextType.IMAGE, f"{img[0][1]}"))
+            while extract_markdown_images(split_text[1]) != []:
+                img = extract_markdown_images(split_text[1])
+                split_text_again = split_text[1].split(f"![{img[0][0]}]({img[0][1]})", 1)
+                if split_text_again[0] != "":
+                    new_nodes.append(TextNode(f"{split_text_again[0]}", TextType.TEXT))
+                if img[0][0] != "":
+                    new_nodes.append(TextNode(f"{img[0][0]}", TextType.IMAGE, f"{img[0][1]}"))
+                split_text[1] = split_text_again[1]
+            if split_text[1] != "":
+                new_nodes.append(TextNode(f"{split_text[1]}", TextType.TEXT))
+    return new_nodes
+                
            
 
 
