@@ -1,7 +1,7 @@
 import unittest
 from htmlnode import LeafNode
 from textnode import TextNode, TextType
-from converter_func import text_node_to_html_node, split_nodes_delimiter
+from converter_func import text_node_to_html_node, split_nodes_delimiter, split_nodes_image, split_nodes_link
 
 """
 tag, value, props | text, text_type, url 
@@ -116,6 +116,93 @@ class Test_split_nodes_delimiter(unittest.TestCase):
         node = [TextNode("``code``", TextType.TEXT)]
         output = [TextNode("code", TextType.TEXT)]
         self.assertEqual(output, split_nodes_delimiter(node, "`", TextType.CODE))
+
+class Test_split_nodes_image(unittest.TestCase):
+    def test_null_cases(self):
+        plain_text = TextNode("plain text", TextType.TEXT)
+        empty_node = TextNode("", TextType.TEXT)
+        wrong_type = TextNode("this is code", TextType.CODE)
+        not_a_node = "not a node"
+        node_no_url = TextNode("![alt]()", TextType.TEXT)
+        old_nodes = [plain_text, empty_node, wrong_type, not_a_node, node_no_url]
+        output = [TextNode("plain text", TextType.TEXT)]
+        self.assertListEqual(split_nodes_image(old_nodes), output)
+    
+    def test_image_at_front(self):
+        node = [TextNode("![alt](http://example.com) the image is at the start of this text", TextType.TEXT)]
+        output = [TextNode("alt", TextType.IMAGE, "http://example.com"), TextNode(" the image is at the start of this text", TextType.TEXT)]
+        self.assertListEqual(split_nodes_image(node), output)
+
+    def test_image_alone(self):
+        node = [TextNode("![alt](http://example.com)", TextType.TEXT)]
+        output = [TextNode("alt", TextType.IMAGE, "http://example.com")]
+        self.assertListEqual(split_nodes_image(node), output)
+
+    def test_multiple_images(self):
+        node = [TextNode("![alt](http://example.com) and another ![alt2](http://second.com)", TextType.TEXT)]
+        output = [TextNode("alt", TextType.IMAGE, "http://example.com"), TextNode(" and another ", TextType.TEXT), TextNode("alt2", TextType.IMAGE, "http://second.com")]
+        self.assertListEqual(split_nodes_image(node), output)
+
+    def test_multiple_images_no_text(self):
+        node = [TextNode("![alt](http://example.com)![alt](http://example.com)", TextType.TEXT)]
+        output = [TextNode("alt", TextType.IMAGE, "http://example.com"), TextNode("alt", TextType.IMAGE, "http://example.com")]
+        self.assertListEqual(split_nodes_image(node), output)
+    
+    def test_no_alt(self):
+        node = [TextNode("![](www.url.com)", TextType.TEXT)]
+        output = [TextNode("", TextType.IMAGE, "www.url.com")]
+        self.assertListEqual(split_nodes_image(node), output)
+
+    def test_special_cases(self):
+        nodes = [TextNode("![%^/>](url)[alt](url)this is a very long string I wrote for this test case!", TextType.TEXT), TextNode("link", TextType.LINK, "url")]
+        output = [TextNode("%^/>", TextType.IMAGE, "url"), TextNode("[alt](url)this is a very long string I wrote for this test case!", TextType.TEXT)]
+        self.assertListEqual(split_nodes_image(nodes), output)
+
+class Test_split_nodes_link(unittest.TestCase):
+    def test_null_cases(self):
+        plain_text = TextNode("plain text", TextType.TEXT)
+        empty_node = TextNode("", TextType.TEXT)
+        wrong_type = TextNode("this is code", TextType.CODE)
+        not_a_node = "not a node"
+        node_no_url = TextNode("[link]()", TextType.TEXT)
+        old_nodes = [plain_text, empty_node, wrong_type, not_a_node, node_no_url]
+        output = [TextNode("plain text", TextType.TEXT)]
+        self.assertListEqual(split_nodes_link(old_nodes), output)
+    
+    def test_link_at_front(self):
+        node = [TextNode("[link](http://example.com) the link is at the start of this text", TextType.TEXT)]
+        output = [TextNode("link", TextType.LINK, "http://example.com"), TextNode(" the link is at the start of this text", TextType.TEXT)]
+        self.assertListEqual(split_nodes_link(node), output)
+
+    def test_link_alone(self):
+        node = [TextNode("[link](http://example.com)", TextType.TEXT)]
+        output = [TextNode("link", TextType.LINK, "http://example.com")]
+        self.assertListEqual(split_nodes_link(node), output)
+
+    def test_multiple_links(self):
+        node = [TextNode("[link](http://example.com) and another [link2](http://second.com)", TextType.TEXT)]
+        output = [TextNode("link", TextType.LINK, "http://example.com"), TextNode(" and another ", TextType.TEXT), TextNode("link2", TextType.LINK, "http://second.com")]
+        self.assertListEqual(split_nodes_link(node), output)
+
+    def test_multiple_links_no_text(self):
+        node = [TextNode("[link](http://example.com)[link2](http://example.com)", TextType.TEXT)]
+        output = [TextNode("link", TextType.LINK, "http://example.com"), TextNode("link2", TextType.LINK, "http://example.com")]
+        self.assertListEqual(split_nodes_link(node), output)
+    
+    def test_no_alt(self):
+        node = [TextNode("[](www.url.com)", TextType.TEXT)]
+        output = [TextNode("", TextType.LINK, "www.url.com")]
+        self.assertListEqual(split_nodes_link(node), output)
+    
+    def test_special_cases(self):
+        nodes = [TextNode("[%^/>](url)![alt](url)this is a very long string I wrote for this test case!", TextType.TEXT), TextNode("alt", TextType.IMAGE, "url")]
+        output = [TextNode("%^/>", TextType.LINK, "url"), TextNode("![alt](url)this is a very long string I wrote for this test case!", TextType.TEXT)]
+        self.assertListEqual(split_nodes_link(nodes), output)
+
+ 
+
+
+
 
 
 

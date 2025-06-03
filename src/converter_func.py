@@ -62,7 +62,7 @@ def split_nodes_delimiter(old_nodes, delimiter, text_type):
 
 
 
-def split_images(old_nodes):
+def split_nodes_image(old_nodes):
     
     new_nodes = []
     for node in old_nodes:
@@ -79,21 +79,21 @@ def split_images(old_nodes):
             split_text = node.text.split(f"![{img[0][0]}]({img[0][1]})", 1)
             if split_text[0] != "":
                 new_nodes.append(TextNode(f"{split_text[0]}", TextType.TEXT))
-            if img[0][0] != "":
+            if img[0][1] != "":
                 new_nodes.append(TextNode(f"{img[0][0]}", TextType.IMAGE, f"{img[0][1]}"))
             while extract_markdown_images(split_text[1]) != []:
                 img = extract_markdown_images(split_text[1])
                 split_text_again = split_text[1].split(f"![{img[0][0]}]({img[0][1]})", 1)
                 if split_text_again[0] != "":
                     new_nodes.append(TextNode(f"{split_text_again[0]}", TextType.TEXT))
-                if img[0][0] != "":
+                if img[0][1] != "":
                     new_nodes.append(TextNode(f"{img[0][0]}", TextType.IMAGE, f"{img[0][1]}"))
                 split_text[1] = split_text_again[1]
             if split_text[1] != "":
                 new_nodes.append(TextNode(f"{split_text[1]}", TextType.TEXT))
     return new_nodes
                 
-def split_links(old_nodes):
+def split_nodes_link(old_nodes):
 
     new_nodes = []
     for node in old_nodes:
@@ -110,18 +110,18 @@ def split_links(old_nodes):
             split_text = node.text.split(f"[{lnk[0][0]}]({lnk[0][1]})", 1)
             if split_text[0] != "":
                 new_nodes.append(TextNode(f"{split_text[0]}", TextType.TEXT))
-            if lnk[0][0] != "":
+            if lnk[0][1] != "":
                 new_nodes.append(TextNode(f"{lnk[0][0]}", TextType.LINK, f"{lnk[0][1]}"))
-                while extract_markdown_links(split_text[1]) != []:
-                    lnk = extract_markdown_links(split_text[1])
-                    split_text_again = split_text[1].split(f"[{lnk[0][0]}]({lnk[0][1]})", 1)
-                    if split_text_again[0] != "":
-                        new_nodes.append(TextNode(f"{split_text_again[0]}", TextType.TEXT))
-                    if lnk[0][0] != "":
-                        new_nodes.append(TextNode(f"{lnk[0][0]}", TextType.LINK, f"{lnk[0][1]}"))
-                    split_text[1] = split_text_again[1]
-                if split_text[1] != "":
-                    new_nodes.append(TextNode(f"{split_text[1]}", TextType.TEXT))
+            while extract_markdown_links(split_text[1]) != []:
+                lnk = extract_markdown_links(split_text[1])
+                split_text_again = split_text[1].split(f"[{lnk[0][0]}]({lnk[0][1]})", 1)
+                if split_text_again[0] != "":
+                    new_nodes.append(TextNode(f"{split_text_again[0]}", TextType.TEXT))
+                if lnk[0][1] != "":
+                    new_nodes.append(TextNode(f"{lnk[0][0]}", TextType.LINK, f"{lnk[0][1]}"))
+                split_text[1] = split_text_again[1]
+            if split_text[1] != "":
+                new_nodes.append(TextNode(f"{split_text[1]}", TextType.TEXT))
     return new_nodes           
 
 

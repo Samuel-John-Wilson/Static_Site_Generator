@@ -8,7 +8,7 @@ def extract_markdown_images(text):
 
 
 
-
+# the first bracket filters out ! preceding [, to avoid extracting images by mistake.
 def extract_markdown_links(text):
     return re.findall(r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)", text)
 
