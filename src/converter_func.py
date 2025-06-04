@@ -45,7 +45,7 @@ def split_nodes_delimiter(old_nodes, delimiter, text_type):
     
     for node in old_nodes:
         if node.text_type != TextType.TEXT:
-            new_nodes.append(node)
+            new_nodes.append(TextNode(node.text, node.text_type, node.url))
         else:
             split_text = node.text.split(delimiter)
             if len(split_text) % 2 == 0:
@@ -69,11 +69,12 @@ def split_nodes_image(old_nodes):
         if not isinstance(node, TextNode):
             continue
         if node.text_type != TextType.TEXT:
+            new_nodes.append(TextNode(node.text, node.text_type, node.url))
             continue
         if node.text == "":
             continue 
         if not extract_markdown_images(node.text):
-            new_nodes.append(node)
+            new_nodes.append(TextNode(node.text, node.text_type, node.url))
         else:
             img = extract_markdown_images(node.text)
             split_text = node.text.split(f"![{img[0][0]}]({img[0][1]})", 1)
@@ -100,11 +101,12 @@ def split_nodes_link(old_nodes):
         if not isinstance(node, TextNode):
             continue
         if node.text_type != TextType.TEXT:
+            new_nodes.append(TextNode(node.text, node.text_type, node.url))
             continue
         if node.text == "":
             continue
         if not extract_markdown_links(node.text):
-            new_nodes.append(node)
+            new_nodes.append(TextNode(node.text, node.text_type, node.url))
         else:
             lnk = extract_markdown_links(node.text)
             split_text = node.text.split(f"[{lnk[0][0]}]({lnk[0][1]})", 1)
@@ -126,8 +128,8 @@ def split_nodes_link(old_nodes):
 
 
 
-
-
+def text_to_textnodes(text):
+    return split_nodes_link(split_nodes_image(split_nodes_delimiter(split_nodes_delimiter(split_nodes_delimiter([TextNode(f"{text}", TextType.TEXT)], "`", TextType.CODE),"_", TextType.ITALIC), "**", TextType.BOLD)))
     
 
 

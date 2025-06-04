@@ -1,7 +1,7 @@
 import unittest
 from htmlnode import LeafNode
 from textnode import TextNode, TextType
-from converter_func import text_node_to_html_node, split_nodes_delimiter, split_nodes_image, split_nodes_link
+from converter_func import text_node_to_html_node, split_nodes_delimiter, split_nodes_image, split_nodes_link, text_to_textnodes
 
 """
 tag, value, props | text, text_type, url 
@@ -125,7 +125,7 @@ class Test_split_nodes_image(unittest.TestCase):
         not_a_node = "not a node"
         node_no_url = TextNode("![alt]()", TextType.TEXT)
         old_nodes = [plain_text, empty_node, wrong_type, not_a_node, node_no_url]
-        output = [TextNode("plain text", TextType.TEXT)]
+        output = [TextNode("plain text", TextType.TEXT), TextNode("this is code", TextType.CODE)]
         self.assertListEqual(split_nodes_image(old_nodes), output)
     
     def test_image_at_front(self):
@@ -155,7 +155,7 @@ class Test_split_nodes_image(unittest.TestCase):
 
     def test_special_cases(self):
         nodes = [TextNode("![%^/>](url)[alt](url)this is a very long string I wrote for this test case!", TextType.TEXT), TextNode("link", TextType.LINK, "url")]
-        output = [TextNode("%^/>", TextType.IMAGE, "url"), TextNode("[alt](url)this is a very long string I wrote for this test case!", TextType.TEXT)]
+        output = [TextNode("%^/>", TextType.IMAGE, "url"), TextNode("[alt](url)this is a very long string I wrote for this test case!", TextType.TEXT),  TextNode("link", TextType.LINK, "url")]
         self.assertListEqual(split_nodes_image(nodes), output)
 
 class Test_split_nodes_link(unittest.TestCase):
@@ -166,7 +166,7 @@ class Test_split_nodes_link(unittest.TestCase):
         not_a_node = "not a node"
         node_no_url = TextNode("[link]()", TextType.TEXT)
         old_nodes = [plain_text, empty_node, wrong_type, not_a_node, node_no_url]
-        output = [TextNode("plain text", TextType.TEXT)]
+        output = [TextNode("plain text", TextType.TEXT),  TextNode("this is code", TextType.CODE)]
         self.assertListEqual(split_nodes_link(old_nodes), output)
     
     def test_link_at_front(self):
@@ -196,10 +196,47 @@ class Test_split_nodes_link(unittest.TestCase):
     
     def test_special_cases(self):
         nodes = [TextNode("[%^/>](url)![alt](url)this is a very long string I wrote for this test case!", TextType.TEXT), TextNode("alt", TextType.IMAGE, "url")]
-        output = [TextNode("%^/>", TextType.LINK, "url"), TextNode("![alt](url)this is a very long string I wrote for this test case!", TextType.TEXT)]
+        output = [TextNode("%^/>", TextType.LINK, "url"), TextNode("![alt](url)this is a very long string I wrote for this test case!", TextType.TEXT), TextNode("alt", TextType.IMAGE, "url")]
         self.assertListEqual(split_nodes_link(nodes), output)
 
  
+
+class Test_text_to_text_nodes(unittest.TestCase):
+    def test_base_case(self):
+        fulltext = "This is **text** with an _italic_ word and a `code block` and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)"
+        output = [
+            TextNode("This is ", TextType.TEXT),
+            TextNode("text", TextType.BOLD),
+            TextNode(" with an ", TextType.TEXT),
+            TextNode("italic", TextType.ITALIC),
+            TextNode(" word and a ", TextType.TEXT),
+            TextNode("code block", TextType.CODE),
+            TextNode(" and an ", TextType.TEXT),
+            TextNode("obi wan image", TextType.IMAGE, "https://i.imgur.com/fJRm4Vk.jpeg"),
+            TextNode(" and a ", TextType.TEXT),
+            TextNode("link", TextType.LINK, "https://boot.dev")
+        ]
+        self.assertListEqual(text_to_textnodes(fulltext), output)
+
+    def test_null_case(self):
+        null_text = ""
+        output = []
+        self.assertListEqual(text_to_textnodes(null_text), output)
+
+    def test_multiple_no_text(self):
+        text = "**text**`code block`[link](https://boot.dev)[link](https://boot.dev)![image](https://image.com)"
+        output = [
+            TextNode("text", TextType.BOLD),
+            TextNode("code block", TextType.CODE),
+            TextNode("link", TextType.LINK, "https://boot.dev"),
+            TextNode("link", TextType.LINK, "https://boot.dev"),
+            TextNode("image", TextType.IMAGE, "https://image.com")
+        ]
+        self.assertListEqual(text_to_textnodes(text), output)
+
+
+
+        
 
 
 
