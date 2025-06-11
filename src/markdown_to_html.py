@@ -29,10 +29,29 @@ Make all the block nodes children under a single parent HTML node (which should 
 
 
 
+    
 
 def markdown_to_html_node(markdown):
 
     # return list of blocks
     list_blocks = markdown_to_blocks(markdown)
-    
+    for block in list_blocks:
+        block_type = block_to_blocktype(block)
+
+        if block_type == BlockType.PARAGRAPH:
+            pass # process for Paragraph goes here. / has inline / can child /  <p> tag.
+        elif block_type == BlockType.HEADING:
+            pass # process for Heading goes here   / has inline / can child / <h1> to <h6> tag, depending on the number of # characters
+        elif block_type == BlockType.CODE:
+            pass # process for Code goes here     / no inline / no child / surrounded by <code> tag nested inside a <pre> tag.
+        elif block_type == BlockType.QUOTE:
+            pass # process for Quote goes here   / no inline / no child /  <blockquote> tag 
+        elif block_type == BlockType.UNORDERED_LIST:
+            pass # process for unordered list goes here  /  <ul> tag, and each list item should be surrounded by a <li> tag.
+        else:
+            pass # process for ordered list goes here  /  <ol> tag, and each list item should be surrounded by a <li> tag.
+
+            # Write out the methods for each type. Might go in block_func? 
+            # This function returns a single parent HTML node with children. 
+
     
