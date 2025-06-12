@@ -27,13 +27,47 @@ Make all the block nodes children under a single parent HTML node (which should 
 
 """
 
+def to_children(block):
+    block_children = []
+    block_text_nodes = text_to_textnodes(block)
+    for node in block_text_nodes:
+        block_children.append(text_node_to_html_node(node))
+    return block_children
 
+def to_paragraph(block):
+    return ParentNode("p", to_children(block))
 
-    
+def to_heading(block):
+    if block.startswith("******"):
+        tag = 'h6'
+    elif block.startswith("*****"):
+        tag = 'h5'
+    elif block.startswith("****"):
+        tag = 'h4'
+    elif block.startswith("***"):
+        tag = 'h3'
+    elif block.startswith("**"):
+        tag = 'h2'
+    else:
+        tag = 'h1'
+    strip_block = block.strip('#')
+    return ParentNode(tag, to_children(strip_block))
+
+def to_code(block):
+    child = LeafNode("code", block)
+    return ParentNode("pre", [child])
+
+def to_quote(block):
+    return LeafNode("blockquote", block)
+
+def to_unordered_list(block):
+
+def to_ordered_list(block):    
 
 def markdown_to_html_node(markdown):
 
     # return list of blocks
+    children = []
     list_blocks = markdown_to_blocks(markdown)
     for block in list_blocks:
         block_type = block_to_blocktype(block)
