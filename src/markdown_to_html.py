@@ -34,36 +34,59 @@ def to_children(block):
         block_children.append(text_node_to_html_node(node))
     return block_children
 
+# process for Paragraph goes here. / has inline / can child /  <p> tag.
 def to_paragraph(block):
     return ParentNode("p", to_children(block))
 
+# process for Heading goes here   / has inline / can child / <h1> to <h6> tag, depending on the number of # characters
 def to_heading(block):
-    if block.startswith("******"):
-        tag = 'h6'
-    elif block.startswith("*****"):
-        tag = 'h5'
-    elif block.startswith("****"):
-        tag = 'h4'
-    elif block.startswith("***"):
-        tag = 'h3'
-    elif block.startswith("**"):
-        tag = 'h2'
-    else:
-        tag = 'h1'
-    strip_block = block.strip('#')
-    return ParentNode(tag, to_children(strip_block))
+    split_block = block.split(' ', 1)
+    tag = f"h{len(split_block[0])}"
+    text = split_block[1] if len(split_block) > 1 else ""
+    return ParentNode(tag, to_children(text.strip()))
 
+# process for Code goes here     / no inline / no child / surrounded by <code> tag nested inside a <pre> tag.
 def to_code(block):
-    child = LeafNode("code", block)
+    child = LeafNode("code", block[3:-3])
     return ParentNode("pre", [child])
 
+# process for Quote goes here  <blockquote> tag 
 def to_quote(block):
-    return LeafNode("blockquote", block)
+    block_children = []
+    split_block = block.split("\n")
+    for line in split_block:
+        if not line.strip():
+            continue
+        new_line = line[2:]
+        block_children.extend(to_children(new_line.strip()))
+    return ParentNode("blockquote", block_children)
 
+
+
+# process for unordered list goes here  /  <ul> tag, and each list item should be surrounded by a <li> tag.
 def to_unordered_list(block):
+    block_children = []
+    split_block = block.split("\n")
+    for line in split_block:
+        if not line.strip():
+            continue
+        new_line = line[2:]
+        block_children.append(ParentNode("li", to_children(new_line.strip())))
+    
+    return ParentNode("ul", block_children)
 
-def to_ordered_list(block):    
+# process for ordered list goes here  /  <ol> tag, and each list item should be surrounded by a <li> tag
+def to_ordered_list(block):
+    block_children = []
+    split_block = block.split("\n")
+    for line in split_block:
+        if not line.strip():
+            continue
+        split_line = line.split('.', 1)
+        block_children.append(ParentNode("li", to_children(split_line[1].strip())))
+    return ParentNode("ol", block_children)
 
+# This function returns a single parent HTML node with children.
 def markdown_to_html_node(markdown):
 
     # return list of blocks
@@ -73,19 +96,20 @@ def markdown_to_html_node(markdown):
         block_type = block_to_blocktype(block)
 
         if block_type == BlockType.PARAGRAPH:
-            pass # process for Paragraph goes here. / has inline / can child /  <p> tag.
+            children.append(to_paragraph(block)) 
         elif block_type == BlockType.HEADING:
-            pass # process for Heading goes here   / has inline / can child / <h1> to <h6> tag, depending on the number of # characters
+            children.append(to_heading(block)) 
         elif block_type == BlockType.CODE:
-            pass # process for Code goes here     / no inline / no child / surrounded by <code> tag nested inside a <pre> tag.
+            children.append(to_code(block)) 
         elif block_type == BlockType.QUOTE:
-            pass # process for Quote goes here   / no inline / no child /  <blockquote> tag 
+            children.append(to_quote(block)) 
         elif block_type == BlockType.UNORDERED_LIST:
-            pass # process for unordered list goes here  /  <ul> tag, and each list item should be surrounded by a <li> tag.
+            children.append(to_unordered_list(block)) 
         else:
-            pass # process for ordered list goes here  /  <ol> tag, and each list item should be surrounded by a <li> tag.
+            children.append(to_ordered_list(block))
+    return ParentNode("div", children)
 
-            # Write out the methods for each type. Might go in block_func? 
-            # This function returns a single parent HTML node with children. 
+            
+             
 
     
