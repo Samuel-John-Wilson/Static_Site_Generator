@@ -1,5 +1,5 @@
 
-from blocktype import blocktype
+from blocktype import BlockType
 from block_func import markdown_to_blocks, block_to_blocktype
 from converter_func import text_node_to_html_node, split_nodes_delimiter, split_nodes_image, split_nodes_link, text_to_textnodes
 from htmlnode import HTMLNode, ParentNode, LeafNode
@@ -25,7 +25,20 @@ The "code" block is a bit of a special case: it should not do any inline markdow
 I didn't use my text_to_children function for this block type, I manually made a TextNode and used text_node_to_html_node.
 Make all the block nodes children under a single parent HTML node (which should just be a div) and return it.
 
+
+## Quote Block Processing Fix
+
+**Issue**: Quote blocks with multiple lines were rendering without spaces between lines.
+
+**Root Cause**: The original implementation processed each quote line separately using `to_children()`, creating individual HTML nodes for each line. When these nodes rendered, there was no space separator between the content from different lines.
+
+**Solution**: Modified `to_quote()` to first join all quote lines with spaces using `" ".join(quote_lines)`, then process the combined text as a single unit through `to_children()`. This preserves the natural spacing between lines while still allowing inline markdown formatting (bold, italic, etc.) to work correctly within the quote block.
+
+**Example**:
+- Before: `"This is a quote blockIt has **bold** in it"`
+- After: `"This is a quote block It has **bold** in it"`
 """
+
 
 def to_children(block):
     block_children = []
@@ -36,7 +49,9 @@ def to_children(block):
 
 # process for Paragraph goes here. / has inline / can child /  <p> tag.
 def to_paragraph(block):
-    return ParentNode("p", to_children(block))
+    # Replace newlines with spaces and strip extra whitespace - newlines in markdown paragraphs become spaces in html
+    normalized_text = block.replace('\n', ' ').strip()
+    return ParentNode("p", to_children(normalized_text))
 
 # process for Heading goes here   / has inline / can child / <h1> to <h6> tag, depending on the number of # characters
 def to_heading(block):
@@ -47,18 +62,24 @@ def to_heading(block):
 
 # process for Code goes here     / no inline / no child / surrounded by <code> tag nested inside a <pre> tag.
 def to_code(block):
-    child = LeafNode("code", block[3:-3])
+    block_content = block[3:-3]
+    if block_content.startswith('\n'):
+        block_content = block_content[1:]
+    child = LeafNode("code", block_content)
     return ParentNode("pre", [child])
 
 # process for Quote goes here  <blockquote> tag 
 def to_quote(block):
-    block_children = []
+    quote_lines = [] 
     split_block = block.split("\n")
     for line in split_block:
         if not line.strip():
             continue
-        new_line = line[2:]
-        block_children.extend(to_children(new_line.strip()))
+        new_line = line[2:] # remove '> '
+        quote_lines.append(new_line.strip())
+    #join all line with spaces, then process as one block
+    full_quote_text = " ".join(quote_lines)
+    block_children = to_children(full_quote_text)
     return ParentNode("blockquote", block_children)
 
 
