@@ -13,3 +13,8 @@ def extract_markdown_links(text):
     return re.findall(r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)", text)
 
 
+def extract_markdown_header(text):
+    return re.findall(r"^#\s+(.+)", text, re.MULTILINE)
+
+
+

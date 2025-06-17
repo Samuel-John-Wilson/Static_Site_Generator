@@ -1,1 +1,1 @@
-python3 src/main.pycd
+python3 src/main.py
