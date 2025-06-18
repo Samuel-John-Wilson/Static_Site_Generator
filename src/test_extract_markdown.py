@@ -1,5 +1,5 @@
 import unittest
-from extract_markdown_func import extract_markdown_images, extract_markdown_links, extract_markdown_header
+from extract_markdown_func import extract_markdown_images, extract_markdown_links, extract_title
 
 
 class Test_extract_markdown_images(unittest.TestCase):
@@ -27,7 +27,7 @@ class Test_extract_markdown_links(unittest.TestCase):
                self.assertEqual([], matches)
 
          
-class Test_extract_markdown_header(unittest.TestCase):
+class Test_extract_title(unittest.TestCase):
         def test_base_case(self):
             text = """
 there is not header on this line
@@ -35,5 +35,5 @@ but there will be one soon
 # This is a header. Hooray!
 ## this is a second header! I hope it isn't found.
 """
-            output = ["This is a header. Hooray!"]
-            self.assertEqual(extract_markdown_header(text), output)
+            output = "This is a header. Hooray!"
+            self.assertEqual(extract_title(text), output)
