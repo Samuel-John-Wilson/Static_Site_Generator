@@ -5,7 +5,13 @@ from converter_func import text_node_to_html_node, split_nodes_delimiter, split_
 from extract_markdown_func import extract_markdown_images, extract_markdown_links, extract_title
 from markdown_to_html import to_children, to_heading, to_paragraph, to_code, to_quote, to_unordered_list, to_unordered_list, markdown_to_html_node
 import os
-import shutil 
+import shutil
+import sys 
+
+if not sys.argv[1]:
+    basepath = "/"
+else:
+    basepath = sys.argv[1]
 
 dir_log =[]
 
@@ -60,7 +66,7 @@ def generate_page(from_path, template_path, dest_path):
     html_content = markdown_to_html_node(content).to_html() 
     title = extract_title(content)
     # Replace the {{ Title }} and {{ Content }} placeholders in the template with the HTML and title you generated
-    final_page = template.replace("{{ Title }}", title).replace("{{ Content }}", html_content)
+    final_page = template.replace("{{ Title }}", title).replace("{{ Content }}", html_content).replace('href="/', f'href="{basepath}')
     #write final html file
     with open(dest_path, 'w', encoding='utf-8') as output_file:
         output_file.write(final_page)
@@ -87,8 +93,8 @@ def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
 
 def main():
     clear_dl()
-    copy_directory("./static", "./public")
-    generate_pages_recursive("./content", "./template.html", "./public")
+    copy_directory(f"{basepath}static", f"{basepath}docs")
+    generate_pages_recursive(f"{basepath}content", f"{basepath}template.html", f"{basepath}docs")
     
 
 if __name__=="__main__":
