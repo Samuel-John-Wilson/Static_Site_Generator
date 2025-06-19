@@ -8,7 +8,7 @@ import os
 import shutil
 import sys 
 
-if not sys.argv[1]:
+if len(sys.argv) == 1:
     basepath = "/"
 else:
     basepath = sys.argv[1]
@@ -45,7 +45,7 @@ def copy_directory(src, destination):
 
 
     
-def generate_page(from_path, template_path, dest_path):
+def generate_page(from_path, template_path, dest_path, basepath='/'):
     # check that paths exist 
     if not os.path.exists(from_path):
         raise ValueError("source path invalid")
@@ -65,13 +65,13 @@ def generate_page(from_path, template_path, dest_path):
     # extract title, turn markup content into html
     html_content = markdown_to_html_node(content).to_html() 
     title = extract_title(content)
-    # Replace the {{ Title }} and {{ Content }} placeholders in the template with the HTML and title you generated
-    final_page = template.replace("{{ Title }}", title).replace("{{ Content }}", html_content).replace('href="/', f'href="{basepath}')
+    # Replace the {{ Title }} and {{ Content }} placeholders in the template with the HTML and title you generated. Replace href and src with basepath formatting. 
+    final_page = template.replace("{{ Title }}", title).replace("{{ Content }}", html_content).replace('href="/', f'href="{basepath}').replace('src="/' , f'src="{basepath}')
     #write final html file
     with open(dest_path, 'w', encoding='utf-8') as output_file:
         output_file.write(final_page)
 
-def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, basepath='/'):
     global dir_log
     if not os.path.isdir(dir_path_content):
         raise ValueError("Content path invalid")
@@ -81,10 +81,10 @@ def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
         item_dest = os.path.join(dest_dir_path, item)
         if os.path.isdir(item_path):
             new_dest = os.path.join(dest_dir_path, item)
-            generate_pages_recursive(item_path, template_path, new_dest)
+            generate_pages_recursive(item_path, template_path, new_dest, basepath)
         elif os.path.isfile(item_path) and item_path.endswith(".md"):
             html_item_dest = os.path.splitext(item_dest)[0] + ".html"
-            generate_page(item_path, template_path, html_item_dest)
+            generate_page(item_path, template_path, html_item_dest, basepath)
         else:
             dir_log.append(f"unknown file at {item_path} not processed")
 
@@ -94,7 +94,7 @@ def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
 def main():
     clear_dl()
     copy_directory(f"{basepath}static", f"{basepath}docs")
-    generate_pages_recursive(f"{basepath}content", f"{basepath}template.html", f"{basepath}docs")
+    generate_pages_recursive(f"{basepath}content", f"{basepath}template.html", f"{basepath}docs", basepath)
     
 
 if __name__=="__main__":
