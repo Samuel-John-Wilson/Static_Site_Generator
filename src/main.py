@@ -93,8 +93,8 @@ def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, bas
 
 def main():
     clear_dl()
-    copy_directory(f"{basepath}static", f"{basepath}docs")
-    generate_pages_recursive(f"{basepath}content", f"{basepath}template.html", f"{basepath}docs", basepath)
+    copy_directory("static", "docs")
+    generate_pages_recursive("content", "template.html", "docs", basepath)
     
 
 if __name__=="__main__":
