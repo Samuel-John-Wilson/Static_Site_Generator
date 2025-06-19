@@ -4,7 +4,7 @@ from block_func import markdown_to_blocks, block_to_blocktype
 from converter_func import text_node_to_html_node, split_nodes_delimiter, split_nodes_image, split_nodes_link, text_to_textnodes
 from htmlnode import HTMLNode, ParentNode, LeafNode
 from textnode import TextNode, TextType
-
+import html
 
 
 """Assignment
@@ -62,7 +62,7 @@ def to_heading(block):
 
 # process for Code goes here     / no inline / no child / surrounded by <code> tag nested inside a <pre> tag.
 def to_code(block):
-    block_content = block[3:-3]
+    block_content = html.escape(block[3:-3])
     if block_content.startswith('\n'):
         block_content = block_content[1:]
     child = LeafNode("code", block_content)
