@@ -37,3 +37,8 @@ but there will be one soon
 """
             output = "This is a header. Hooray!"
             self.assertEqual(extract_title(text), output)
+
+        def test_null_case(self):
+            text = ""
+            with self.assertRaises(ValueError):
+                extract_title(text)

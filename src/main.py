@@ -65,8 +65,22 @@ def generate_page(from_path, template_path, dest_path):
     with open(dest_path, 'w', encoding='utf-8') as output_file:
         output_file.write(final_page)
 
-    
-        
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+    global dir_log
+    if not os.path.isdir(dir_path_content):
+        raise ValueError("Content path invalid")
+    list_content = os.listdir(dir_path_content)
+    for item in list_content:
+        item_path = os.path.join(dir_path_content, item)
+        item_dest = os.path.join(dest_dir_path, item)
+        if os.path.isdir(item_path):
+            new_dest = os.path.join(dest_dir_path, item)
+            generate_pages_recursive(item_path, template_path, new_dest)
+        elif os.path.isfile(item_path) and item_path.endswith(".md"):
+            html_item_dest = os.path.splitext(item_dest)[0] + ".html"
+            generate_page(item_path, template_path, html_item_dest)
+        else:
+            dir_log.append(f"unknown file at {item_path} not processed")
 
 
 
@@ -74,7 +88,7 @@ def generate_page(from_path, template_path, dest_path):
 def main():
     clear_dl()
     copy_directory("./static", "./public")
-    generate_page("./content/index.md", "./template.html", "./public/index.html")
+    generate_pages_recursive("./content", "./template.html", "./public")
     
 
 if __name__=="__main__":
